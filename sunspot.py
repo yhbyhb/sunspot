@@ -3,11 +3,7 @@ import shutil
 import pandas as pd
 
 def get_filenames(dir_str):
-    files = []
-    for file in os.listdir(dir_str):
-        files.append(file)
-
-    return files
+    return [f for f in os.listdir(dir_str) if os.path.isfile(os.path.join(dir_str, f))]
 
 def write_fileList(file_list, file_path):
     with open(file_path, 'w') as file:
@@ -27,7 +23,10 @@ def convert_filenames_to_csv(file_path, csv_path):
     for line in lines:
         items = line.strip().split('_')
 
-        rows.append([line.strip(), items[1]])
+        try:
+            rows.append([line.strip(), items[1]])
+        except:
+            print(line, items)
 
     df = pd.DataFrame(rows, columns = ['Image', 'class'])
     df.to_csv(csv_path, index=False)
@@ -60,7 +59,7 @@ if __name__ == "__main__":
             # print(files)
             file_list_txt = path + '.txt'
             file_list_csv = path + '.csv'
-            print(file_list_txt, file_list_csv)
+            # print(file_list_txt, file_list_csv)
             write_fileList(files, file_list_txt)
             convert_filenames_to_csv(file_list_txt, file_list_csv)
 
