@@ -1,4 +1,5 @@
 import os
+import shutil
 import pandas as pd
 
 def get_filenames(dir_str):
@@ -28,8 +29,25 @@ def convert_filenames_to_csv(file_path, csv_path):
 
         rows.append([line.strip(), items[1]])
 
-    df = pd.DataFrame(rows)
-    df.to_csv(csv_path, index=False, header=False)    
+    df = pd.DataFrame(rows, columns = ['Image', 'class'])
+    df.to_csv(csv_path, index=False)
+
+def classify_files(csv_path):
+    df = pd.read_csv(csv_path, index_col='Image')
+    data_root = csv_path.replace('.csv', '')
+    for image in df.index:
+        folder = df.loc[image, 'class']
+        dst_path = os.path.join(data_root, folder)
+
+        src = os.path.join(data_root, image)
+        dst = os.path.join(dst_path, image)
+        if not os.path.exists(dst_path):
+            os.mkdir(dst_path)
+
+        try:
+            shutil.copyfile(src, dst)
+        except:
+            print('{}, {}'.format(src, dst))
 
 if __name__ == "__main__":
     dirs = ['two_part', 'three_part']
@@ -42,7 +60,12 @@ if __name__ == "__main__":
             # print(files)
             file_list_txt = path + '.txt'
             file_list_csv = path + '.csv'
+            print(file_list_txt, file_list_csv)
             write_fileList(files, file_list_txt)
             convert_filenames_to_csv(file_list_txt, file_list_csv)
 
-
+    for dirname in dirs:
+        for sub_dirname in sub_dirs:
+            path = os.path.join(dirname, sub_dirname)
+            file_list_csv = path + '.csv'
+            classify_files(file_list_csv)
